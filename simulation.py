@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-
 
 def get_p_and_y(n, x, alpha, b):
     """
@@ -24,21 +22,9 @@ def create_a_i(z, p, a_vec_0, a_vec_1, i):
     :param a_vec_0: a_i(z, x=0)
     :param a_vec_1: a_i(z, x=1)
     :param i: Current index
-    :return: Two vectors containing a_i(z,x=0) and a_i(z, x=1) with a new value at index i.
+    :return: Two vectors containing a_i(z,x=0)*a_(i-1)(z,x=0)*...*a_1(z,x=0) and a_i(z,x=1)*a_(i-1)(z,x=1)*...*a_1(z,x=1)
+    at index i.
     """
-
-    # a_vec_0[i] = np.sum([p[i] * ((z[i] == 1).astype(np.int) + (((z[i] == 0).astype(np.int) - (z[i] == 1).astype(np.int)) *
-    #             ((p[i] * np.prod(a_vec_0[0:i])) > ((1-p[i]) * np.prod(a_vec_1[0:i]))))), (1-p[i]) * ((z[i]==1).astype(np.int)
-    #         + (((z[i] == 0).astype(np.int) - (z[i] == 1).astype(np.int)) * ((((1 - p[i]) * np.prod(a_vec_0[0:i])) > p[i] * np.prod(a_vec_1[0:i])))))])
-    #
-    # a_vec_1[i] =  np.sum([(1 - p[i]) * ((z[i] == 1).astype(np.int) + (((z[i]==0).astype(np.int)
-    #                     - (z[i] == 1).astype(np.int)) * (((p[i] * np.prod(a_vec_0[0:i]))) > ((1-p[i])
-    #             * np.prod(a_vec_1[0:i]))))), p[i] * ((z[i] == 1).astype(np.int) + (((z[i] == 0).astype(np.int) - (z[i] == 1).astype(np.int)) *
-    #                      (((1 - p[i]) * np.prod(a_vec_0[0:i])) > p[i] * np.prod(a_vec_1[0:i]))))])
-    # # #
-    # if ((p[i] * np.prod(a_vec_0[0:i])) == ((1-p[i]) * np.prod(a_vec_1[0:i]))) or (((1 - p[i]) * np.prod(a_vec_0[0:i])) == p[i] * np.prod(a_vec_1[0:i])):
-    #     print("a_i terms equal")
-
     a_vec_0[i] = np.sum([p[i] * ((z[i] == 1).astype(np.int) + (((z[i] == 0).astype(np.int) - (z[i] == 1).astype(np.int)) *
                 ((p[i] * a_vec_0[i-1]) > ((1-p[i]) * a_vec_1[i-1])))), (1-p[i]) * ((z[i]==1).astype(np.int)
             + (((z[i] == 0).astype(np.int) - (z[i] == 1).astype(np.int)) * ((((1 - p[i]) * a_vec_0[i-1]) > p[i] * a_vec_1[i-1]))))]) * a_vec_0[i-1]
@@ -64,51 +50,36 @@ def z(n, alpha, beta):
     # print("y= {}".format(y))
 
     z = np.zeros(n, dtype=int)
-    # z_new = np.zeros(n, dtype = int)
     a_vec_0 = np.zeros(n)
     a_vec_1 = np.zeros(n)
+
     prob_0 = np.zeros(n) # Container for argmax-expression inserted x=0
     prob_1 = np.zeros(n) # Container for argmax-expression inserted x=1
-    # a_vec_0_new = np.zeros(n)
-    # a_vec_1_new = np.zeros(n)
-    if (p[0] * (y[0] == 0) + (1 - p[0]) * (y[0] == 1) == p[0] * (y[0] == 1) + (1 - p[0]) * (y[0] == 0)):
-        z[0] = np.random.randint(0, 2)
-        # z_new[0] = np.random.randint(0,2)
 
     z[0] = (p[0] * (y[0] == 0) + (1 - p[0]) * (y[0] == 1) < p[0] * (y[0] == 1) + (1 - p[0]) * (y[0] == 0))
-    # z_new[0] = z[0]
+    if (p[0] * (y[0] == 0) + (1 - p[0]) * (y[0] == 1) == p[0] * (y[0] == 1) + (1 - p[0]) * (y[0] == 0)):
+        z[0] = np.random.randint(0, 2)
+
     prob_0[0] = p[0] * (y[0] == 0) + (1 - p[0]) * (y[0] == 1)
     prob_1[0] = p[0] * (y[0] == 1) + (1 - p[0]) * (y[0] == 0)
-    # prob_0_new = np.zeros(n)
-    # prob_1_new = np.zeros(n)
-    # prob_0_new[0] =  p[0] * (y[0] == 0) + (1 - p[0]) * (y[0] == 1)
-    # prob_1_new[0] = p[0] * (y[0] == 1) + (1 - p[0]) * (y[0] == 0)
 
     a_vec_0[0] = np.sum([((z[0]==0) * (p[0] > 0.5) + (z[0] == 1) * (p[0] < 0.5)) * p[0],
                        ((z[0]==1) * (p[0] >= 0.5) + (z[0] == 0) * (p[0] < 0.5)) * (1 - p[0])])
 
     a_vec_1[0] = np.sum([((z[0] == 0) * (p[0] > 0.5) + (z[0] == 1) * (p[0] < 0.5)) * (1-p[0]),
                        ((z[0]==1) * (p[0] >= 0.5) + (z[0] == 0) * (p[0] < 0.5)) * p[0]])
-    #
-    # a_vec_0_new[0] = np.sum([((z[0]==0) * (p[0] > 0.5) + (z[0] == 1) * (p[0] < 0.5)) * p[0],
-    #                    ((z[0]==1) * (p[0] >= 0.5) + (z[0] == 0) * (p[0] < 0.5)) * (1 - p[0])])
-    #
-    # a_vec_1_new[0] = np.sum([((z[0] == 0) * (p[0] > 0.5) + (z[0] == 1) * (p[0] < 0.5)) * (1-p[0]),
-    #                    ((z[0]==1) * (p[0] >= 0.5) + (z[0] == 0) * (p[0] < 0.5)) * p[0]])
 
     for i in range(1, n):
 
         if ((p[i] * (y[i] == 0) + (1 - p[i]) * (y[i] == 1)) * a_vec_1[i-1]) == ((p[i] * (y[i] == 1) + (1 - p[i]) * (y[i] == 0)) * a_vec_1[i-1]):
             print("Equal")
             z[i] = np.random.randint(0,2)
-            # z_new[i] = z_[i]
+
         else:
-            # z[i] = (((p[i] * (y[i] == 0) + (1 - p[i]) * (y[i] == 1)) * np.prod(a_vec_0[0:i])) <
-            #     ((p[i] * (y[i] == 1) + (1 - p[i]) * (y[i] == 0)) * np.prod(a_vec_1[0:i])))
+
             z[i] = (((p[i] * (y[i] == 0) + (1 - p[i]) * (y[i] == 1)) * a_vec_0[i-1]) <
-                ((p[i] * (y[i] == 1) + (1 - p[i]) * (y[i] == 0)) *a_vec_1[i-1]))
-        # prob_0[i] = (p[i] * (y[i] == 0) + (1 - p[i]) * (y[i] == 1)) * np.prod(a_vec_0[0:i])
-        # prob_1[i] = (p[i] * (y[i] == 1) + (1 - p[i]) * (y[i] == 0)) * np.prod(a_vec_1[0:i])
+                ((p[i] * (y[i] == 1) + (1 - p[i]) * (y[i] == 0)) * a_vec_1[i-1]))
+
         prob_0[i] = (p[i] * (y[i] == 0) + (1 - p[i]) * (y[i] == 1)) * a_vec_0[i-1]
         prob_1[i] = (p[i] * (y[i] == 1) + (1 - p[i]) * (y[i] == 0)) * a_vec_1[i-1]
         a_vec_0, a_vec_1 = create_a_i(z, p, a_vec_0, a_vec_1, i)
