@@ -1,15 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def decisions(x, z_vector, observations,p, include_observations=False, include_probs=False, block=True):
+def decisions(x, z_vector, observations,p, include_observations=False, include_probs=False, block=True, grid=False):
     plt.plot(z_vector)
     plt.plot(z_vector, 'bo--', label="Decision (z)")
     if include_observations:
         plt.plot(observations, color='grey', marker='o', linestyle='dashed', label="Observation (y)", alpha=0.5)
     plt.xlabel("Individual")
     if include_probs:
-        plt.plot(p, label="Probability of observing correct", alpha=0.7)
+        plt.plot(p, label=r"Probability of observing correct $P(Y=x|X=x)$", alpha=0.7)
     plt.legend()
+    plt.grid(grid)
     plt.title("True value: x = {}".format(x))
     plt.show(block=block)
 

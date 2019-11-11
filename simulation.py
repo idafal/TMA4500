@@ -74,16 +74,13 @@ def z(n, alpha, beta):
         if ((p[i] * (y[i] == 0) + (1 - p[i]) * (y[i] == 1)) * a_vec_1[i-1]) == ((p[i] * (y[i] == 1) + (1 - p[i]) * (y[i] == 0)) * a_vec_1[i-1]):
             print("Equal")
             z[i] = np.random.randint(0,2)
-
         else:
-
             z[i] = (((p[i] * (y[i] == 0) + (1 - p[i]) * (y[i] == 1)) * a_vec_0[i-1]) <
                 ((p[i] * (y[i] == 1) + (1 - p[i]) * (y[i] == 0)) * a_vec_1[i-1]))
 
         prob_0[i] = (p[i] * (y[i] == 0) + (1 - p[i]) * (y[i] == 1)) * a_vec_0[i-1]
         prob_1[i] = (p[i] * (y[i] == 1) + (1 - p[i]) * (y[i] == 0)) * a_vec_1[i-1]
         a_vec_0, a_vec_1 = create_a_i(z, p, a_vec_0, a_vec_1, i)
-
 
     print(prob_0)
     print(prob_1)
