@@ -25,6 +25,15 @@ def create_a_i(z, p, a_vec_0, a_vec_1, i):
     :return: Two vectors containing a_i(z,x=0)*a_(i-1)(z,x=0)*...*a_1(z,x=0) and a_i(z,x=1)*a_(i-1)(z,x=1)*...*a_1(z,x=1)
     at index i.
     """
+
+    b_0 = np.sum([p[i] * ((z[i] == 1).astype(np.int) + (((z[i] == 0).astype(np.int) - (z[i] == 1).astype(np.int)) *
+                ((p[i] * a_vec_0[i-1]) > ((1-p[i]) * a_vec_1[i-1])))), (1-p[i]) * ((z[i]==1).astype(np.int)
+            + (((z[i] == 0).astype(np.int) - (z[i] == 1).astype(np.int)) * ((((1 - p[i]) * a_vec_0[i-1]) > p[i] * a_vec_1[i-1]))))])
+    b_1 = np.sum([(1 - p[i]) * ((z[i] == 1).astype(np.int) + (((z[i]==0).astype(np.int)
+                        - (z[i] == 1).astype(np.int)) * (((p[i] * a_vec_0[i-1])) > ((1-p[i])
+                * a_vec_1[i-1])))), p[i] * ((z[i] == 1).astype(np.int) + (((z[i] == 0).astype(np.int) - (z[i] == 1).astype(np.int)) *
+                         (((1 - p[i]) * a_vec_0[i-1]) > p[i] * a_vec_1[i-1])))])
+
     a_vec_0[i] = np.sum([p[i] * ((z[i] == 1).astype(np.int) + (((z[i] == 0).astype(np.int) - (z[i] == 1).astype(np.int)) *
                 ((p[i] * a_vec_0[i-1]) > ((1-p[i]) * a_vec_1[i-1])))), (1-p[i]) * ((z[i]==1).astype(np.int)
             + (((z[i] == 0).astype(np.int) - (z[i] == 1).astype(np.int)) * ((((1 - p[i]) * a_vec_0[i-1]) > p[i] * a_vec_1[i-1]))))]) * a_vec_0[i-1]
@@ -34,24 +43,27 @@ def create_a_i(z, p, a_vec_0, a_vec_1, i):
                 * a_vec_1[i-1])))), p[i] * ((z[i] == 1).astype(np.int) + (((z[i] == 0).astype(np.int) - (z[i] == 1).astype(np.int)) *
                          (((1 - p[i]) * a_vec_0[i-1]) > p[i] * a_vec_1[i-1])))]) * a_vec_1[i-1]
 
-    return a_vec_0, a_vec_1
+    return a_vec_0, a_vec_1, b_0, b_1
 
 
 def z(n, alpha, beta):
     """ Calculate the decision for each of the n individuals"""
-
-    np.random.seed(1)
     # Assuming x has a 50/50 chance of 0 or 1
     x = np.random.binomial(n=1, p=0.5, size=None)
-    print("x = {}\n".format(x))
-
+    # print("x = {}\n".format(x))
+    x=0
     p, y = get_p_and_y(n, x, alpha, beta) # get probabilities and observations
     # print("p = {}".format(p))
     # print("y= {}".format(y))
-
+    # y[0] = 1-x
+    # y[1] = 1-x
+    # y[49] = 1
+    # p[49] = 1
     z = np.zeros(n, dtype=int)
     a_vec_0 = np.zeros(n)
     a_vec_1 = np.zeros(n)
+    b_vec_0 = np.zeros(n)
+    b_vec_1 = np.zeros(n)
 
     prob_0 = np.zeros(n) # Container for argmax-expression inserted x=0
     prob_1 = np.zeros(n) # Container for argmax-expression inserted x=1
@@ -68,11 +80,12 @@ def z(n, alpha, beta):
 
     a_vec_1[0] = np.sum([((z[0] == 0) * (p[0] > 0.5) + (z[0] == 1) * (p[0] < 0.5)) * (1-p[0]),
                        ((z[0]==1) * (p[0] >= 0.5) + (z[0] == 0) * (p[0] < 0.5)) * p[0]])
-
+    b_vec_0[0]=a_vec_0[0]
+    b_vec_1[0] = a_vec_1[0]
     for i in range(1, n):
 
         if ((p[i] * (y[i] == 0) + (1 - p[i]) * (y[i] == 1)) * a_vec_1[i-1]) == ((p[i] * (y[i] == 1) + (1 - p[i]) * (y[i] == 0)) * a_vec_1[i-1]):
-            print("Equal")
+            print("Equal, alpha = {}, beta = {}".format(alpha, beta))
             z[i] = np.random.randint(0,2)
         else:
             z[i] = (((p[i] * (y[i] == 0) + (1 - p[i]) * (y[i] == 1)) * a_vec_0[i-1]) <
@@ -80,12 +93,12 @@ def z(n, alpha, beta):
 
         prob_0[i] = (p[i] * (y[i] == 0) + (1 - p[i]) * (y[i] == 1)) * a_vec_0[i-1]
         prob_1[i] = (p[i] * (y[i] == 1) + (1 - p[i]) * (y[i] == 0)) * a_vec_1[i-1]
-        a_vec_0, a_vec_1 = create_a_i(z, p, a_vec_0, a_vec_1, i)
-
-    print(prob_0)
-    print(prob_1)
-
-    return z, x, y, p, prob_0, prob_1
+        a_vec_0, a_vec_1, b_vec_0[i], b_vec_1[i] = create_a_i(z, p, a_vec_0, a_vec_1, i)
+        # print("a0={}".format(a_vec_0[i]))
+        # print("b0 = {}".format(np.prod(b_vec_0[0:i])))
+        # print("a1={}".format(a_vec_1[i]))
+        # print("b1 = {}".format(np.prod(b_vec_1[0:(i)])))
+    return z, x, y, p, prob_0, prob_1, a_vec_0, a_vec_1, b_vec_0, b_vec_1
 
 
 

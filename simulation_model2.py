@@ -18,12 +18,11 @@ def z_i(n, alpha, b):
     z = np.zeros(n, dtype=int)     # Container for decisions
     prob_0 = np.zeros(n) # Container for argmax-expression inserted x=0
     prob_1 = np.zeros(n) # Container for argmax-expression inserted x=1
-
+    print(p[0])
     # Base-case
     z[0] = (p[0] * (y[0] == 0) + (1 - p[0]) * (y[0] == 1) < p[0] * (y[0] == 1) + (1 - p[0]) * (y[0] == 0))
     if (p[0] * (y[0] == 0) + (1 - p[0]) * (y[0] == 1) == p[0] * (y[0] == 1) + (1 - p[0]) * (y[0] == 0)):
         z[0] = np.random.randint(0, 2)
-
     prob_0[0] = p[0] * (y[0] == 0) + (1 - p[0]) * (y[0] == 1)
     prob_1[0] = p[0] * (y[0] == 1) + (1 - p[0]) * (y[0] == 0)
 

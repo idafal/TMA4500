@@ -27,11 +27,14 @@ def get_groups(array):
     return groups
 
 def change_in_cascade(groups, n):
+    """
+    Assuming the true value is x=0.
+    """
     number_of_changes = 0
     wrong_changes = 0 # count number of time a cascade changes from correct to wrong by one or more individual
     one_change = 0 # count if the cascade changes once by at least one individual
     new_cascades = 0 # count number of times a new cascade occurs (at least n in a row) (if less than 10 deviates within one cascade, it is counted as one)
-    singles = 0
+    singles = 0 # Number of changes where a change does not lead to a new cascade(counting both)
 
     if len(groups) == 1:
         return -1
@@ -41,9 +44,9 @@ def change_in_cascade(groups, n):
 
     for i in range(len(groups)):
         if groups[i][1] >= n:
-            number_of_changes = len(groups[i + 1:])
-            one_change = 1  * (len(groups[i:]) > 1)
-            wrong_changes = np.sum(indices[i:]) - (1 * int(indices[i] == 1)) # dont count current wrong
+            number_of_changes = len(groups[i + 1:]) # Count total number of changes
+            one_change = 1  * (len(groups[i:]) > 1) # Boolean. At least one change after the first cacsade has occured
+            wrong_changes = np.sum(indices[i:]) - (1 * int(indices[i] == 1)) # dont count current
             new_cascades = np.sum(values[i + 1:] >= n)
             singles = np.sum(values[i+1:]<n)
 
